@@ -1,0 +1,19 @@
+lead:
+  wave:
+    chebyshevpoly √
+    fmvoice
+    fof/fof2
+    vosim
+  streson — if i want to get fancy and try to simulate the other strings resonating
+  svfilter — might work nicely to shape sound of output
+
+wash:
+  comb
+  vdelay
+  wgbow
+  wguide1
+
+percuss:
+  fofilter
+  grain
+  vibes
