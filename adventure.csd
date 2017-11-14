@@ -94,10 +94,18 @@ instr Lead_Reverb
     ilrscale = 4
   outs alrmixl*ilrscale, alrmixr*ilrscale
 
-  gasigl = 0
-  gasigr = 0
+  galsigl = 0
+  galigr = 0
 
 endin
+
+;instr Global_Reverb
+;
+;    igrpartsize = 256
+;    Sgrimpfile  = "global_impulse.wav"
+;  agrlll, agrllr, agrlrl, agrlrr pconvolve 
+;
+;endin
 
 </CsInstruments>
 ; ==============================================
