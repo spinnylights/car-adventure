@@ -27,21 +27,41 @@ instr Lead_Sig
   iminpitch = cpspch(6.11)
   imaxpitch = cpspch(10.11)
 
-  ; two-note slide
-  ;
-  ; start at ibfrq, hold for ibfrqlen, slide to iefrq for isfrqlen,
-  ; hold iefrq for iefrqlen
-      ibfrq = cpspch(p5)
-  if (p6 == 0) then
-    afrq = ibfrq
-  else
-      iefrq = cpspch(p6)
-        ibfrqrat = p7 
+    ifrqswitch = p5
+    ibfrq = cpspch(p6)
+
+  if (ifrqswitch == 2) then
+      ; two-note slide
+      ;
+      ; start at ibfrq, hold for ibfrqlen, slide to iefrq for isfrqlen,
+      ; hold iefrq for iefrqlen
+      iefrq = cpspch(p7)
+        ibfrqrat = p8 
       ibfrqlen = idur * ibfrqrat
-        isfrqrat = p8
+        isfrqrat = p9
       isfrqlen = idur * isfrqrat
       iefrqlen = idur - (ibfrqlen + isfrqlen)
     afrq linseg ibfrq, ibfrqlen, ibfrq, isfrqlen, iefrq, iefrqlen, iefrq
+  elseif (ifrqswitch == 3) then
+      ; three-note slide
+      ;
+      ; start at ibfrq, hold for ibfrqlen, slide to iefrq for isfrqlen,
+      ; hold iefrq for iefrqlen
+      ; i "Lead_Sig" 0 4 .60 3 8.00 8.04 8.00 .25 .1 .25 .1
+      ifrq2 = cpspch(p7)
+      ifrq3 = cpspch(p8)
+        ibfrqrat = p9
+      ibfrqlen = idur * ibfrqrat
+        is1frqrat = p10
+      is1frqlen = idur * is1frqrat
+        i2frqrat = p11
+      i2frqlen = idur * i2frqrat
+        is2frqrat = p12
+      is2frqlen = idur * is2frqrat
+      is3frqlen = idur - (ibfrqlen + is1frqlen + i2frqlen + is2frqlen)
+    afrq linseg ibfrq, ibfrqlen, ibfrq, is1frqlen, ifrq2, i2frqlen, ifrq2, is2frqlen, ifrq3, is3frqlen, ifrq3
+  else
+    afrq = ibfrq
   endif
 
   ; pluck
@@ -119,8 +139,8 @@ instr Lead_Sig
   amix = amixprenv * aenv
 
     ipan = 0.5
-  galsigl = amix * ipan
-  galsigr = amix * (1 - ipan)
+  galsigl = galsigl + (amix * ipan)
+  galsigr = galsigr + (amix * (1 - ipan))
 
 endin
 
@@ -174,21 +194,26 @@ endin
 </CsInstruments>
 ; ==============================================
 <CsScore>
-
+t 0 80
 ; reverb
 i "Lead_Reverb" 0 12
 i "Global_Reverb" 0 12
 
 ; lead
-;i "Lead_Sig" 0 4 .60 8.00 8.04 .25 .1
-;i "Lead_Sig" 4 1 .62 8.04 8.05 .1 .2
-;i "Lead_Sig" 5 1 .63 8.05 8.04 .75 .15
-;i "Lead_Sig" 6 2 .61 8.04
-i "Lead_Sig" 0 2 .60 6.11
-i "Lead_Sig" 2 . .60 7.11
-i "Lead_Sig" 4 . .60 8.11
-i "Lead_Sig" 6 . .60 9.11
-i "Lead_Sig" 8 . .60 10.11
+
+;i "Lead_Sig" 0 4 .60 2 8.00 8.04 .25 .1
+;i "Lead_Sig" 4 1 .62 2 8.04 8.05 .1 .2
+;i "Lead_Sig" 5 1 .63 2 8.05 8.04 .75 .15
+;i "Lead_Sig" 6 2 .61 2 8.04
+
+;i "Lead_Sig" 0 2 .60 6.11
+;i "Lead_Sig" 2 . .60 7.11
+;i "Lead_Sig" 4 . .60 8.11
+;i "Lead_Sig" 6 . .60 9.11
+;i "Lead_Sig" 8 . .60 10.11
+
+i1 0 4 .40 3 8.11 8.09 8.11 .0001 .125 .0001 .125
+i1 0 4 .80 3 9.07 9.06 9.07 .0001 .125 .0001 .125
 
 </CsScore>
 </CsoundSynthesizer>
