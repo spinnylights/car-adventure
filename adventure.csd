@@ -90,12 +90,28 @@ instr Lead_Sig
   acwave chebyshevpoly acsig, kcouts, kck1, kck2, kck3, kck4, kck5, kck6 
 
   ; mix
-        ampl = apluck / 1.1
-        amwc = acwave / .43
-      amixprefil = ampl + amwc
-      ilowcut = 30
-      amixfil atone amixprefil, ilowcut
-    amixprenv balance amixfil, amixprefil
+          ampl = apluck / 1.1
+          amwc = acwave / .43
+        amixprellshelf = ampl + amwc
+        kllshelffco = 330
+        kllshelflvl = 0.45
+        kllshelfq   = 1 ; ignored
+        kllshelfslp = .4
+        illshelfmde = 10 ; low shelf
+      amixllshelf rbjeq amixprellshelf, kllshelffco, kllshelflvl, kllshelfq, kllshelfslp, illshelfmde
+      klmpeakfco = 500
+      klmpeaklvl = 1.8
+      klmpeakq   = 6
+      klmpeaks   = 1 ; ignored
+      ilmpeakmde = 8 ; peaking
+    amixlmpeak rbjeq amixllshelf, klmpeakfco, klmpeaklvl, klmpeakq, klmpeaks, ilmpeakmde
+    klhshelffco = 8000
+    klhshelflvl = 0.03
+    klhshelfq   = 1 ; ignored
+    klhshelfslp = .6
+    ilhshelfmde = 12 ; low shelf
+  amixprenv rbjeq amixlmpeak, klhshelffco, klhshelflvl, klhshelfq, klhshelfslp, ilhshelfmde
+
       ilbclip = .002
       ilfclip = .1
       ildur   = idur - (ilbclip + ilfclip)
