@@ -105,10 +105,10 @@ instr Lead_Sig
       klmpeaks   = 1 ; ignored
       ilmpeakmde = 8 ; peaking
     amixlmpeak rbjeq amixllshelf, klmpeakfco, klmpeaklvl, klmpeakq, klmpeaks, ilmpeakmde
-    klhshelffco = 8000
-    klhshelflvl = 0.03
+    klhshelffco = 6000
+    klhshelflvl = 0.01
     klhshelfq   = 1 ; ignored
-    klhshelfslp = .6
+    klhshelfslp = .2
     ilhshelfmde = 12 ; low shelf
   amixprenv rbjeq amixlmpeak, klhshelffco, klhshelflvl, klhshelfq, klhshelfslp, ilhshelfmde
 
