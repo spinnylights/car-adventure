@@ -1,4 +1,4 @@
-<CsoundSynthesizer>
+6CsoundSynthesizer>
 <CsOptions>
 ;-o /dev/null
 ;-odac
@@ -45,9 +45,7 @@ instr Lead_Sig
   elseif (ifrqswitch == 3) then
       ; three-note slide
       ;
-      ; start at ibfrq, hold for ibfrqlen, slide to iefrq for isfrqlen,
-      ; hold iefrq for iefrqlen
-      ; i "Lead_Sig" 0 4 .60 3 8.00 8.04 8.00 .25 .1 .25 .1
+      ; i "Lead_Sig" 0 4 .60 4 8.00 8.04 8.00 7.07 .25 .1 .25 .1
       ifrq2 = cpspch(p7)
       ifrq3 = cpspch(p8)
         ibfrqrat = p9
@@ -58,8 +56,29 @@ instr Lead_Sig
       i2frqlen = idur * i2frqrat
         is2frqrat = p12
       is2frqlen = idur * is2frqrat
-      is3frqlen = idur - (ibfrqlen + is1frqlen + i2frqlen + is2frqlen)
-    afrq linseg ibfrq, ibfrqlen, ibfrq, is1frqlen, ifrq2, i2frqlen, ifrq2, is2frqlen, ifrq3, is3frqlen, ifrq3
+      i3frqlen = idur - (ibfrqlen + is1frqlen + i2frqlen + is2frqlen)
+    afrq linseg ibfrq, ibfrqlen, ibfrq, is1frqlen, ifrq2, i2frqlen, ifrq2, is2frqlen, ifrq3, i3frqlen, ifrq3
+  elseif (ifrqswitch == 4) then
+      ; four-note slide
+      ;
+      ; i "Lead_Sig" 0 4 .60 4 8.11 8.09 8.11 8.04 .0001 .125 .0001 .125 .25 .12499
+      ifrq2 = cpspch(p7)
+      ifrq3 = cpspch(p8)
+      ifrq4 = cpspch(p9)
+        ibfrqrat = p10
+      ibfrqlen = idur * ibfrqrat
+        is1frqrat = p11
+      is1frqlen = idur * is1frqrat
+        i2frqrat = p12
+      i2frqlen = idur * i2frqrat
+        is2frqrat = p13
+      is2frqlen = idur * is2frqrat
+        i3frqrat = p14
+      i3frqlen = idur * i3frqrat
+        is3frqrat = p15
+      is3frqlen = idur * is3frqrat
+      i4frqlen = idur - (ibfrqlen + is1frqlen + i2frqlen + is2frqlen)
+    afrq linseg ibfrq, ibfrqlen, ibfrq, is1frqlen, ifrq2, i2frqlen, ifrq2, is2frqlen, ifrq3, i3frqlen, ifrq3, is3frqlen, ifrq4, i4frqlen, ifrq4
   else
     afrq = ibfrq
   endif
@@ -136,7 +155,8 @@ instr Lead_Sig
       ilfclip = .1
       ildur   = idur - (ilbclip + ilfclip)
     aenv      linseg 0, ilbclip, iamp, ildur, iamp, ilfclip, 0
-  amix = amixprenv * aenv
+    alscale   = .7
+  amix = (amixprenv * aenv) * alscale
 
     ipan = 0.5
   galsigl = galsigl + (amix * ipan)
@@ -155,7 +175,7 @@ instr Lead_Reverb
   alrrder delay galsigr, ilrpartsize/sr
 
     ilrrevamt = 0.12
-    ilrwet    = 0.6
+    ilrwet    = 0.35
   alrmixl ntrpol alrldel, ((alrll + alrrl) / 2) * ilrrevamt, ilrwet
   alrmixr ntrpol alrrder, ((alrlr + alrrr) / 2) * ilrrevamt, ilrwet
 
@@ -178,8 +198,8 @@ instr Global_Reverb
   agrldel delay gasigl, igrpartsize/sr
   agrlder delay gasigr, igrpartsize/sr
 
-    igrrevamt = 0.1
-    igrwet    = 0.4
+    igrrevamt = 0.05
+    igrwet    = 0.3
   agrmixl ntrpol agrldel, ((agrlll + agrlrl + agrrll + agrrrl) / 4) * igrrevamt, igrwet
   agrmixr ntrpol agrlder, ((agrllr + agrlrr + agrrlr + agrrrr) / 4) * igrrevamt, igrwet
 
@@ -194,10 +214,10 @@ endin
 </CsInstruments>
 ; ==============================================
 <CsScore>
-t 0 80
+t 0 95
 ; reverb
-i "Lead_Reverb" 0 12
-i "Global_Reverb" 0 12
+i "Lead_Reverb" 0 20
+i "Global_Reverb" 0 20
 
 ; lead
 
@@ -212,8 +232,44 @@ i "Global_Reverb" 0 12
 ;i "Lead_Sig" 6 . .60 9.11
 ;i "Lead_Sig" 8 . .60 10.11
 
-i1 0 4 .40 3 8.11 8.09 8.11 .0001 .125 .0001 .125
-i1 0 4 .80 3 9.07 9.06 9.07 .0001 .125 .0001 .125
+i1 0 4 .60 4 9.07 9.06 9.07 9.04 .0001 .125 .0001 .125 .5 .2497
+i1 0 4 .60 4 8.11 8.09 8.11 8.07 .0001 .125 .0001 .125 .5 .2497
+
+i1 4 2 .55 2 9.04 9.02 .75 .25
+i1 4 2 .55 2 8.07 8.04 .75 .25
+
+i1 6 4 .53 2 8.11 9.02 .75 .25
+i1 6 4 .53 2 8.02 8.04 .75 .25
+
+i1 10 4 .56 1 9.04
+i1 10 4 .56 1 8.07
+
+i1 14 2 .58 2 9.04 9.06 .75 .25
+i1 14 2 .58 2 8.07 8.09 .75 .25
+
+i1 16 4 .60 2 9.06 9.07 .125 .125
+i1 16 4 .60 2 8.07 8.11 .125 .125
+
+i2 0 .5 900 .5
+i2 1 .5 900 .5
+i2 2 .5 900 .5
+i2 3 .5 900 .5
+i2 4 .5 900 .5
+i2 5 .5 900 .5
+i2 6 .5 900 .5
+i2 7 .5 900 .5
+i2 8 .5 900 .5
+i2 9 .5 900 .5
+i2 10 .5 900 .5
+i2 11 .5 900 .5
+i2 12 .5 900 .5
+i2 13 .5 900 .5
+i2 14 .5 900 .5
+i2 15 .5 900 .5
+i2 16 .5 900 .5
+i2 17 .5 900 .5
+i2 18 .5 900 .5
+i2 19 .5 900 .5
 
 </CsScore>
 </CsoundSynthesizer>
