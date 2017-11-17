@@ -299,65 +299,57 @@ i1 16 4 .60 2 8.07 8.11 .125 .125
 
 ; i           s d a   f    hrd pos vibf vamp dec
 ;i "Vibes_Sig" 0 1 .03 7.07 .8  .85 12   10.85  .5
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
-;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" 1 1 .03 7.07 .8  .85 12   10.85  .5
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
+i "Vibes_Sig" + . .   .    .   .   .    .      .
 
 ; i           s d a  hz  parm1 fn
 ;i "Snare_Sig" 0 1 .4 180 .6    1
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
-;i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" 2 2 .4 180 .6    1
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
 
 ; i           s d a  hz  parm1 parm2 fn
-i "Thump_Sig" 0 1 .4 30  .8    8     3
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
+;i "Thump_Sig" 0 1 .4 30  .8    8     3
+i "Thump_Sig" 1 2 .3 30  .8    8     3
 i "Thump_Sig" + . .  .   .     .     .
 i "Thump_Sig" + . .  .   .     .     .
 i "Thump_Sig" + . .  .   .     .     .
