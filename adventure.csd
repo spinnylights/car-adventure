@@ -217,6 +217,20 @@ instr Snare_Sig
   gasigr = gasigr + (asig * (1 - ipan))
 endin
 
+instr Thump_Sig
+      kamp   = p4
+      kcps   = p5
+      icps   = p5
+      ifn    = p8
+      imeth  = 4
+      iparm1 = p6
+      iparm2 = p7
+    asig pluck kamp, kcps, icps, ifn, imeth, iparm1, iparm2
+    ipan = .5
+  gasigl = gasigl + (asig * ipan)
+  gasigr = gasigr + (asig * (1 - ipan))
+endin
+
 instr Global_Reverb
 
     igrpartsize = 256
@@ -308,27 +322,51 @@ i1 16 4 .60 2 8.07 8.11 .125 .125
 ;i "Vibes_Sig" + . .   .   .    .   .    .    . 
 
 ; i           s d a  hz  parm1 fn
-i "Snare_Sig" 0 1 .4 180 .6    1
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" 0 1 .4 180 .6    1
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+;i "Snare_Sig" + . .  .   .     .
+
+; i           s d a  hz  parm1 parm2 fn
+i "Thump_Sig" 0 1 .4 30  .8    8     3
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
+i "Thump_Sig" + . .  .   .     .     .
 </CsScore>
 </CsoundSynthesizer>
