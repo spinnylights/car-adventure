@@ -204,6 +204,19 @@ instr Vibes_Sig
   gasigr = gasigr + (asig * (1 - ipan))
 endin
 
+instr Snare_Sig
+      kamp   = p4
+      kcps   = p5
+      icps   = p5
+      ifn    = p7
+      imeth  = 3
+      iparm1 = p6
+    asig pluck kamp, kcps, icps, ifn, imeth, iparm1
+    ipan = .6
+  gasigl = gasigl + (asig * ipan)
+  gasigr = gasigr + (asig * (1 - ipan))
+endin
+
 instr Global_Reverb
 
     igrpartsize = 256
@@ -230,8 +243,9 @@ endin
 </CsInstruments>
 ; ==============================================
 <CsScore>
-f 1 0 256 1 "mandpluk.wav" 0 0 0
-f 2 0 128 10 1
+f 1 0 256 1 "mandpluk.wav" 0 0 0                 ; impulse file for 'vibes'
+f 2 0 128 10 1                                   ; sine wave
+f 3 0 16384 10 1 1   1   1    0.7 0.5   0.3  0.1 ; pulse wave
 
 t 0 95
 ; reverb
@@ -270,28 +284,51 @@ i1 16 4 .60 2 9.06 9.07 .125 .125
 i1 16 4 .60 2 8.07 8.11 .125 .125
 
 ; i           s d a   f    hrd pos vibf vamp dec
-i "Vibes_Sig" 0 1 .03 7.07 .8  .85 12   10.85  .5
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
-i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" 0 1 .03 7.07 .8  .85 12   10.85  .5
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
+;i "Vibes_Sig" + . .   .   .    .   .    .    . 
 
+; i           s d a  hz  parm1 fn
+i "Snare_Sig" 0 1 .4 180 .6    1
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
+i "Snare_Sig" + . .  .   .     .
 </CsScore>
 </CsoundSynthesizer>
