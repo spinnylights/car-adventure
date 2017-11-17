@@ -180,12 +180,28 @@ instr Lead_Reverb
   alrmixr ntrpol alrrder, ((alrlr + alrrr) / 2) * ilrrevamt, ilrwet
 
     ilrscale = 4
-  gasigl = alrmixl*ilrscale
-  gasigr = alrmixr*ilrscale
+  gasigl = gasigl + (alrmixl*ilrscale)
+  gasigr = gasigr + (alrmixr*ilrscale)
 
   galsigl = 0
   galsigr = 0
 
+endin
+
+instr Vibes_Sig
+      kamp  = p4
+      kfreq = cpspch(p5)
+      ihrd  = p6
+      ipos  = p7
+      imp   = 1
+      kvibf = p8
+      kvamp = p9
+      ivfn  = 2
+      idec  = p10
+    asig vibes kamp, kfreq, ihrd, ipos, imp, kvibf, kvamp, ivfn, idec
+    ipan = .4
+  gasigl = gasigl + (asig * ipan)
+  gasigr = gasigr + (asig * (1 - ipan))
 endin
 
 instr Global_Reverb
@@ -214,6 +230,9 @@ endin
 </CsInstruments>
 ; ==============================================
 <CsScore>
+f 1 0 256 1 "mandpluk.wav" 0 0 0
+f 2 0 128 10 1
+
 t 0 95
 ; reverb
 i "Lead_Reverb" 0 20
@@ -250,26 +269,29 @@ i1 14 2 .58 2 8.07 8.09 .75 .25
 i1 16 4 .60 2 9.06 9.07 .125 .125
 i1 16 4 .60 2 8.07 8.11 .125 .125
 
-i2 0 .5 900 .5
-i2 1 .5 900 .5
-i2 2 .5 900 .5
-i2 3 .5 900 .5
-i2 4 .5 900 .5
-i2 5 .5 900 .5
-i2 6 .5 900 .5
-i2 7 .5 900 .5
-i2 8 .5 900 .5
-i2 9 .5 900 .5
-i2 10 .5 900 .5
-i2 11 .5 900 .5
-i2 12 .5 900 .5
-i2 13 .5 900 .5
-i2 14 .5 900 .5
-i2 15 .5 900 .5
-i2 16 .5 900 .5
-i2 17 .5 900 .5
-i2 18 .5 900 .5
-i2 19 .5 900 .5
+; i           s d a   f    hrd pos vibf vamp dec
+i "Vibes_Sig" 0 1 .03 7.07 .8  .85 12   10.85  .5
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
+i "Vibes_Sig" + . .   .   .    .   .    .    . 
 
 </CsScore>
 </CsoundSynthesizer>
