@@ -188,14 +188,37 @@ instr Lead_Reverb
 
 endin
 
+instr Comp_Sig
+    kamp  = p4
+    kfreq = cpspch(p5)
+    ;kpres   random 2, 4
+    ;krat    random 0.1, 0.2
+    ;kvibf   random 6, 8
+    ;kvamp   random .01, .02
+    kpres = 1
+    krat  = .012
+    kvibf = 1.12
+    kvamp = .05
+  amix wgbow kamp, kfreq, kpres, krat, kvibf, kvamp
+
+    ipan = .48
+  gasigl = gasigl + (amix * ipan)
+  gasigr = gasigr + (amix * (1 - ipan))
+endin
+
 instr Vibes_Sig
       kamp  = p4
-      kfreq = cpspch(p5)
-      ihrd  = p6
-      ipos  = p7
+      ;kfreq = cpspch(p5)
+      kfreq   random 300, 400
+      ;ihrd  = p6
+      ihrd    random .6, .9
+      ;ipos  = p7
+      ipos    random .4, .8
       imp   = 1
-      kvibf = p8
-      kvamp = p9
+      ;kvibf = p8
+      kvibf   random 9, 12
+      ;kvamp = p9
+      kvamp   random 9, 12
       ivfn  = 2
       idec  = p10
     asig vibes kamp, kfreq, ihrd, ipos, imp, kvibf, kvamp, ivfn, idec
@@ -206,11 +229,18 @@ endin
 
 instr Snare_Sig
       kamp   = p4
-      kcps   = p5
-      icps   = p5
-      ifn    = p7
+      ;kcps   = p5
+      ;icps   = p5
+      icps     random 180, 240
+      kcps   = icps
+      ;ifnrand random 0, 2
+      ;ifn    = int(ifnrand)
+      ;if (ifn >= 1) then
+      ;  ifn = 3
+      ;endif
+      ifn    = 0
       imeth  = 3
-      iparm1 = p6
+      iparm1   random .6, .95
     asig pluck kamp, kcps, icps, ifn, imeth, iparm1
     ipan = .6
   gasigl = gasigl + (asig * ipan)
@@ -218,17 +248,97 @@ instr Snare_Sig
 endin
 
 instr Thump_Sig
+      seed     0
       kamp   = p4
-      kcps   = p5
-      icps   = p5
-      ifn    = p8
+      ;icps   = p5
+      ;kcps   = p5
+      icps   random 20, 70
+      kcps   = icps
+      ifn    = 1
+      ifnrand random 0, 2
+      ifn    = int(ifnrand)
+      if (ifn >= 1) then
+        ifn = 3
+      endif
+      ;printk .5, ifn
       imeth  = 4
-      iparm1 = p6
-      iparm2 = p7
+      ;iparm1 = p6
+      ;iparm2 = p7
+      iparm1 random .1, .9
+      iparm2 random 2, 10
     asig pluck kamp, kcps, icps, ifn, imeth, iparm1, iparm2
     ipan = .5
   gasigl = gasigl + (asig * ipan)
   gasigr = gasigr + (asig * (1 - ipan))
+endin
+
+instr RoBod_Kick
+  idur         random .2, .4
+  iamp       = p4
+  ibasefreq    random 43, 50
+  inoiseamt    random .01, .06
+  idecmethod = 0
+  imodfreq     random 1, 3
+  ipitchred    random .4, .7
+  ipan       = .52
+  isq2       = 1.0 / sqrt(2.0)
+
+  print idur
+  print ibasefreq
+  print inoiseamt
+  print imodfreq
+  print ipitchred
+
+  ifsine ftgenonce 0, 0, 65536, 10, 1
+  ifsaw  ftgenonce 0, 0, 16384, 10, 1, 0.5, 0.3, 0.25, 0.2, 0.167, 0.14, 0.125, .111 
+
+  if (idecmethod == 0) then
+    kenv linseg iamp, idur, 0
+  elseif (idecmethod == 1) then
+    kenv expon  iamp, idur, .001
+  else
+    prints "ERROR: %d is not a valid value for idecmethod", idecmethod
+  endif
+
+  ; freq-shifted oscil
+
+  apitchenv    expon ibasefreq, idur, ibasefreq * ipitchred
+  aosc         oscil kenv, apitchenv, ifsaw
+  areal, aimag hilbert aosc
+
+  asin oscili 1, imodfreq, ifsine 
+  acos oscili 1, imodfreq, ifsine, .25
+
+  amod1 = areal * acos
+  amod2 = aimag * asin
+
+  aocalc = isq2*(amod1 - amod2)
+
+  aosig balance aocalc, aosc
+
+  ; bp-filtered noise
+
+  afosc rand .5
+
+  ifhpf = 250
+  iflpf  = 1000
+  iflpfceil = 4000
+  iflpenvleng = .3
+
+  afhp butterhp afosc, ifhpf
+
+  aflpenv linseg iflpfceil, idur*iflpenvleng, iflpf
+  aflp butterlp afhp, aflpenv
+
+  afsig balance aflp, afosc
+
+  ; mix
+
+  asig = aosig + afsig*kenv*inoiseamt
+  apostsig clip asig, 1, iamp
+
+  gasigl = gasigl + (apostsig * ipan)
+  gasigr = gasigr + (apostsig * (1 - ipan))
 endin
 
 instr Global_Reverb
@@ -263,8 +373,8 @@ f 3 0 16384 10 1 1   1   1    0.7 0.5   0.3  0.1 ; pulse wave
 
 t 0 95
 ; reverb
-i "Lead_Reverb" 0 20
-i "Global_Reverb" 0 20
+i "Lead_Reverb" 0 24
+i "Global_Reverb" 0 24
 
 ; lead
 
@@ -322,6 +432,15 @@ i "Vibes_Sig" + . .   .    .   .   .    .      .
 i "Vibes_Sig" + . .   .    .   .   .    .      .
 i "Vibes_Sig" + . .   .    .   .   .    .      .
 
+; comp
+
+i "Comp_Sig" 0 4 .3 6.07
+i "Comp_Sig" 0 4 .  6.11
+i "Comp_Sig" 0 4 .  7.02
+i "Comp_Sig" 0 4 .  7.07
+
+; perc
+
 ; i           s d a  hz  parm1 fn
 ;i "Snare_Sig" 0 1 .4 180 .6    1
 i "Snare_Sig" 2 2 .4 180 .6    1
@@ -349,16 +468,28 @@ i "Snare_Sig" + . .  .   .     .
 
 ; i           s d a  hz  parm1 parm2 fn
 ;i "Thump_Sig" 0 1 .4 30  .8    8     3
-i "Thump_Sig" 1 2 .3 30  .8    8     3
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
-i "Thump_Sig" + . .  .   .     .     .
+;i "Thump_Sig" 1  .4 .2 .3 30  .8    8     3
+;i "Thump_Sig" 3  . .  .   .     .     .
+;i "Thump_Sig" 5  . .  .   .     .     .
+;i "Thump_Sig" 7  . .  .   .     .     .
+;i "Thump_Sig" 9  . .  .   .     .     .
+;i "Thump_Sig" 11 . .  .   .     .     .
+;i "Thump_Sig" 13 . .  .   .     .     .
+;i "Thump_Sig" 15 . .  .   .     .     .
+;i "Thump_Sig" 17 . .  .   .     .     .
+;i "Thump_Sig" 19 . .  .   .     .     .
+;i "Thump_Sig" 21 . .  .   .     .     .
+
+i "RoBod_Kick" 1 2 .4
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
+i "RoBod_Kick" + . . 
 </CsScore>
 </CsoundSynthesizer>
