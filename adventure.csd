@@ -1,4 +1,4 @@
-6CsoundSynthesizer>
+<CsoundSynthesizer>
 <CsOptions>
 ;-o /dev/null
 ;-odac
@@ -15,8 +15,13 @@ nchnls  =  2
 gasigl init 0
 gasigr init 0
 
+gasigdl init 0
+gasigdr init 0
+
 galsigl init 0
 galsigr init 0
+
+gicrpartsize = 32768
 
 ; lead
 
@@ -155,7 +160,7 @@ instr Lead_Sig
       ilfclip = .1
       ildur   = idur - (ilbclip + ilfclip)
     aenv      linseg 0, ilbclip, iamp, ildur, iamp, ilfclip, 0
-    alscale   = .7
+    alscale   = .35
   amix = (amixprenv * aenv) * alscale
 
     ipan = 0.5
@@ -166,13 +171,12 @@ endin
 
 instr Lead_Reverb
 
-    ilrpartsize = 256
     Slrimpfile  = "dub_spring_stereo.wav"
-  alrll, alrlr pconvolve galsigl, Slrimpfile, ilrpartsize
-  alrrl, alrrr pconvolve galsigr, Slrimpfile, ilrpartsize
+  alrll, alrlr pconvolve galsigl, Slrimpfile, gicrpartsize
+  alrrl, alrrr pconvolve galsigr, Slrimpfile, gicrpartsize
 
-  alrldel delay galsigl, ilrpartsize/sr
-  alrrder delay galsigr, ilrpartsize/sr
+  alrldel delay galsigl, gicrpartsize/sr
+  alrrder delay galsigr, gicrpartsize/sr
 
     ilrrevamt = 0.12
     ilrwet    = 0.35
@@ -188,23 +192,113 @@ instr Lead_Reverb
 
 endin
 
-instr Comp_Sig
-    kamp  = p4
-    kfreq = cpspch(p5)
-    ;kpres   random 2, 4
-    ;krat    random 0.1, 0.2
-    ;kvibf   random 6, 8
-    ;kvamp   random .01, .02
-    kpres = 1
-    krat  = .012
-    kvibf = 1.12
-    kvamp = .05
-  amix wgbow kamp, kfreq, kpres, krat, kvibf, kvamp
+; accomp
 
-    ipan = .48
-  gasigl = gasigl + (amix * ipan)
-  gasigr = gasigr + (amix * (1 - ipan))
+gimewavf1 ftgen 0, 0, 32768, 10, 1                                                ; sine wave
+gimewavf2 ftgen 0, 0, 32768, 9, 1, 1, 0, 3, .333, 180, 5, .2, 0, 7, .143, 180, 9, .111, 0       ; triangle wave
+
+gamsigl init 0
+gamsigr init 0
+
+instr Moogesque
+  idur   = p3
+  ifrq   = cpspch(p4)
+  iwav1  = p5 ; the number of an f-table
+  iwav2  = p6
+  iwav3  = p7
+  iamp1  = p8
+  iamp2  = p9
+  iamp3  = p10
+  inamp  = p11
+  iscale = p12
+  ipan   = p13
+  imod1  = p14 ; mods are frq * mod, so 1 is unchanged
+  imod2  = p15
+  imod3  = p16
+  kvib1a = p17
+  kvib2a = p18
+  kvib3a = p19
+  kvib1f = p20
+  kvib2f = p21
+  kvib3f = p22
+  ivib1w = p23 ; 0 is sine, 1 is triangle
+  ivib2w = p24
+  ivib3w = p25
+  knfil  = p26 ; -.9999 is white noise, 0 is pink noise, .9999 is brown noise
+  ifcut  = p27
+  ifres  = p28 ; generally <1, higher values might cause aliasing
+  ienvle = p29 ; 0 is linear, 1 is exponential
+  ienva  = p30 ; fraction of envelope that is attack
+  ienvd  = p31 ; fraction of envelope that is decay
+  ienvr  = p32 ; fraction of envelope that is release
+  ienvs  = p33 ; level of sustain
+
+      if (kvib1f == 0) then
+        kvib1 vibr kvib1a, kvib1f, gimewavf1
+      else
+        kvib1 vibr kvib1a, kvib1f, gimewavf2
+      endif
+      if (kvib2f == 0) then
+        kvib2 vibr kvib2a, kvib2f, gimewavf1
+      else
+        kvib2 vibr kvib2a, kvib2f, gimewavf2
+      endif
+      if (kvib3f == 0) then
+        kvib3 vibr kvib3a, kvib3f, gimewavf1
+      else
+        kvib3 vibr kvib3a, kvib3f, gimewavf2
+      endif
+    aosc1  poscil3 iamp1, (ifrq*imod1) + kvib1, iwav1
+    aosc2  poscil3 iamp2, (ifrq*imod2) + kvib2, iwav2
+    aosc3  poscil3 iamp3, (ifrq*imod3) + kvib3, iwav3
+    anoise noise   inamp, knfil
+  asigprefilt = (aosc1 + aosc2 + aosc3 + anoise) / 4
+
+    asigfilt moogladder asigprefilt, ifcut, ifres
+  asigpreenv balance asigfilt, asigprefilt
+
+    iattack  = idur * ienva
+    idecay   = idur * ienvd
+    irelease = idur * ienvr
+    if (ienvle == 0) then
+      aenv madsr iattack, idecay, ienvs, irelease
+    else
+      aenv mxadsr iattack, idecay, ienvs, irelease
+    endif
+  asigprescale = asigpreenv * aenv
+
+  asigscale = asigprescale * iscale
+
+    asigl, asigr pan2 asigscale, ipan
+  gamsigl = gamsigl + asigl
+  gamsigr = gamsigr + asigr
+
 endin
+
+instr Moogesque_Reverb
+
+  klen   = p4 ; amount of feedback, 0-1
+  kdamp  = p5 ; lowpass filter cutoff point, 0-israte/2 (israte usually = sr, can specify alternate value)
+  iwet   = p6 ; 0-1, 0 is all dry, 1 is all wet
+  iscale = p7
+
+  averbprescalel, averbprescaler reverbsc gamsigl, gamsigr, klen, kdamp
+
+  averbl = averbprescalel * iscale
+  averbr = averbprescaler * iscale
+
+    amixl = (averbl * iwet) + (gamsigl * (1 - iwet))
+    amixr = (averbr * iwet) + (gamsigr * (1 - iwet))
+  
+  gasigdl = gasigdl + amixl
+  gasigdr = gasigdr + amixr
+
+  gamsigl = 0
+  gamsigr = 0
+
+endin
+
+; perc
 
 instr Vibes_Sig
       kamp  = p4
@@ -220,31 +314,34 @@ instr Vibes_Sig
       ;kvamp = p9
       kvamp   random 9, 12
       ivfn  = 2
-      idec  = p10
+      idec  = p6
     asig vibes kamp, kfreq, ihrd, ipos, imp, kvibf, kvamp, ivfn, idec
-    ipan = .4
-  gasigl = gasigl + (asig * ipan)
-  gasigr = gasigr + (asig * (1 - ipan))
+    ipan = p5
+  gasigdl = gasigdl + (asig * ipan)
+  gasigdr = gasigdr + (asig * (1 - ipan))
 endin
 
 instr Snare_Sig
-      kamp   = p4
-      ;kcps   = p5
-      ;icps   = p5
-      icps     random 180, 240
-      kcps   = icps
-      ;ifnrand random 0, 2
-      ;ifn    = int(ifnrand)
-      ;if (ifn >= 1) then
-      ;  ifn = 3
-      ;endif
-      ifn    = 0
-      imeth  = 3
-      iparm1   random .6, .95
-    asig pluck kamp, kcps, icps, ifn, imeth, iparm1
-    ipan = .6
-  gasigl = gasigl + (asig * ipan)
-  gasigr = gasigr + (asig * (1 - ipan))
+    kamprand random -0.03, 0.03
+    kamp   = p4 + kamprand
+    ipan   = p5
+    ;kcps   = p5
+    ;icps   = p5
+    icps     random 180, 240
+    kcps   = icps
+    ;ifnrand random 0, 2
+    ;ifn    = int(ifnrand)
+    ;if (ifn >= 1) then
+    ;  ifn = 3
+    ;endif
+    ifn    = 0
+    imeth  = 3
+    iparm1   random .6, .95
+  asig pluck kamp, kcps, icps, ifn, imeth, iparm1
+
+    asigl, asigr pan2 asig, ipan
+  gasigdl = gasigdl + asigl
+  gasigdr = gasigdr + asigr
 endin
 
 instr Thump_Sig
@@ -268,8 +365,8 @@ instr Thump_Sig
       iparm2 random 2, 10
     asig pluck kamp, kcps, icps, ifn, imeth, iparm1, iparm2
     ipan = .5
-  gasigl = gasigl + (asig * ipan)
-  gasigr = gasigr + (asig * (1 - ipan))
+  gasigdl = gasigdl + (asig * ipan)
+  gasigdr = gasigdr + (asig * (1 - ipan))
 endin
 
 instr RoBod_Kick
@@ -280,7 +377,7 @@ instr RoBod_Kick
   idecmethod = 0
   imodfreq     random 1, 3
   ipitchred    random .4, .7
-  ipan       = .52
+  ipan       = p5
   isq2       = 1.0 / sqrt(2.0)
 
   print idur
@@ -337,19 +434,32 @@ instr RoBod_Kick
   asig = aosig + afsig*kenv*inoiseamt
   apostsig clip asig, 1, iamp
 
-  gasigl = gasigl + (apostsig * ipan)
-  gasigr = gasigr + (apostsig * (1 - ipan))
+  gasigdl = gasigdl + (apostsig * ipan)
+  gasigdr = gasigdr + (apostsig * (1 - ipan))
+
+endin
+
+instr Global_Delay
+
+  adell delay gasigdl, gicrpartsize/sr
+  adelr delay gasigdr, gicrpartsize/sr
+
+  gasigl = gasigl + adell
+  gasigr = gasigr + adelr
+
+  gasigdl = 0
+  gasigdr = 0
+
 endin
 
 instr Global_Reverb
 
-    igrpartsize = 256
     Sgrimpfile  = "global_impulse.wav"
-  agrlll, agrllr, agrlrl, agrlrr pconvolve gasigl, Sgrimpfile, igrpartsize
-  agrrll, agrrlr, agrrrl, agrrrr pconvolve gasigr, Sgrimpfile, igrpartsize
+  agrlll, agrllr, agrlrl, agrlrr pconvolve gasigl, Sgrimpfile, gicrpartsize
+  agrrll, agrrlr, agrrrl, agrrrr pconvolve gasigr, Sgrimpfile, gicrpartsize
 
-  agrldel delay gasigl, igrpartsize/sr
-  agrlder delay gasigr, igrpartsize/sr
+  agrldel delay gasigl, gicrpartsize/sr
+  agrlder delay gasigr, gicrpartsize/sr
 
     igrrevamt = 0.05
     igrwet    = 0.3
@@ -367,129 +477,126 @@ endin
 </CsInstruments>
 ; ==============================================
 <CsScore>
-f 1 0 256 1 "mandpluk.wav" 0 0 0                 ; impulse file for 'vibes'
-f 2 0 128 10 1                                   ; sine wave
-f 3 0 16384 10 1 1   1   1    0.7 0.5   0.3  0.1 ; pulse wave
+f 1  0 256 1 "mandpluk.wav" 0 0 0                 ; impulse file for 'vibes'
+f 2  0 32768 10 1                                   ; sine wave
+f 3  0 16384 10 1 1   1   1    0.7 0.5   0.3  0.1   ; pulse wave
+f 4  0 32768 9 1 1 0 3 .333 180 5 .2 0 7 .143 180 9 .111 0       ; triangle wave
+f 5  0 32768 10 1 .5 .333 .25 .2 .167 .143 .125 .111 .1 .0909 .0833 .0777 .071 .067 .063 ; sawtooth
+f 6  0 32768 7 0 16384 -1 0 1 16384 0                            ; reverse sawtooth
+f 7  0 32768 11 30 1                                             ; buzz
+f 8  0 32768 10 1 0 .333 0 .2 0 .143 0 .111 0 .091 0 .077 0 .067 ; square wave
+f 9  0 32768 7 1 8192 1 0 -1 24576 -1                            ; narrow pulse
+f 10 0 32768 7 1 4096 1 0 -1 28672 -1                            ; narrower pulse
+
 
 t 0 95
-; reverb
-i "Lead_Reverb" 0 24
-i "Global_Reverb" 0 24
+; reverb + delay
 
-; lead
+i "Lead_Reverb" 0 56
+i "Global_Reverb" 0 56
+i "Moogesque_Reverb" 0 56 .9 2000 .9 .6
+i "Global_Delay" 0 56
 
-;i "Lead_Sig" 0 4 .60 2 8.00 8.04 .25 .1
-;i "Lead_Sig" 4 1 .62 2 8.04 8.05 .1 .2
-;i "Lead_Sig" 5 1 .63 2 8.05 8.04 .75 .15
-;i "Lead_Sig" 6 2 .61 2 8.04
+;; lead
+;
+;i1 0 4 .60 4 9.07 9.06 9.07 9.04 .0001 .125 .0001 .125 .5 .2497
+;i1 0 4 .60 4 8.11 8.09 8.11 8.07 .0001 .125 .0001 .125 .5 .2497
+;
+;i1 4 2 .55 2 9.04 9.02 .75 .25
+;i1 4 2 .55 2 8.07 8.04 .75 .25
+;
+;i1 6 4 .53 2 8.11 9.02 .75 .25
+;i1 6 4 .53 2 8.02 8.04 .75 .25
+;
+;i1 10 4 .56 1 9.04
+;i1 10 4 .56 1 8.07
+;
+;i1 14 2 .58 2 9.04 9.06 .75 .25
+;i1 14 2 .58 2 8.07 8.09 .75 .25
+;
+;i1 16 4 .60 2 9.06 9.07 .125 .125
+;i1 16 4 .60 2 8.07 8.11 .125 .125
+;
+;; comp
+;
+;;
+; n           s  d  f    w1 w2 w3 wa1 wa2 wa3 noia sca pan mod1 mod2   mod3   viba1 viba2 viba3 vibf1 vibf2 vibf3 vibw1 vibw2 vibw3 noif lpcut lpres envle envat envdec envrel envsusa
+i "Moogesque" 0  16 6.04 4  3  3  1.2 0.8 .8  .12  .5  .53 1    1.0003 0.9997 .5    8     13.2   1.875 9.75  10.75  1     1     1     0.2  5000  .5    1     .0015 .2     .6     .8
+i "Moogesque" .  .  7.05 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   5000  .4  . .014  .012 .  .
+i "Moogesque" .  .  7.09 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   6000  .3  . .012  .009 .  .
+i "Moogesque" .  .  8.00 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   7000  .2  . .01   .007 .  .
 
-;i "Lead_Sig" 0 2 .60 6.11
-;i "Lead_Sig" 2 . .60 7.11
-;i "Lead_Sig" 4 . .60 8.11
-;i "Lead_Sig" 6 . .60 9.11
-;i "Lead_Sig" 8 . .60 10.11
+i "Moogesque" 16 16 6.02 4  3  3  1.2 0.8 .8  .12  .5  .53 1    1.0003 0.9997 .5    8     13.2   1.875 9.75  10.75  1     1     1     0.2  5000  .5    1     .0015 .2     .6     .8
+i "Moogesque" . .   7.07 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   5000  .4  . .014  .012 .  .
+i "Moogesque" . .   7.09 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   6000  .3  . .012  .009 .  .
+i "Moogesque" . .   8.04 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   7000  .2  . .01   .007 .  .
 
-i1 0 4 .60 4 9.07 9.06 9.07 9.04 .0001 .125 .0001 .125 .5 .2497
-i1 0 4 .60 4 8.11 8.09 8.11 8.07 .0001 .125 .0001 .125 .5 .2497
-
-i1 4 2 .55 2 9.04 9.02 .75 .25
-i1 4 2 .55 2 8.07 8.04 .75 .25
-
-i1 6 4 .53 2 8.11 9.02 .75 .25
-i1 6 4 .53 2 8.02 8.04 .75 .25
-
-i1 10 4 .56 1 9.04
-i1 10 4 .56 1 8.07
-
-i1 14 2 .58 2 9.04 9.06 .75 .25
-i1 14 2 .58 2 8.07 8.09 .75 .25
-
-i1 16 4 .60 2 9.06 9.07 .125 .125
-i1 16 4 .60 2 8.07 8.11 .125 .125
-
-; i           s d a   f    hrd pos vibf vamp dec
-;i "Vibes_Sig" 0 1 .03 7.07 .8  .85 12   10.85  .5
-i "Vibes_Sig" 1 1 .03 7.07 .8  .85 12   10.85  .5
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-i "Vibes_Sig" + . .   .    .   .   .    .      .
-
-; comp
-
-i "Comp_Sig" 0 4 .3 6.07
-i "Comp_Sig" 0 4 .  6.11
-i "Comp_Sig" 0 4 .  7.02
-i "Comp_Sig" 0 4 .  7.07
+i "Moogesque" 32 3  6.04 4  3  3  1.2 0.8 .8  .12  .5  .53 1    1.0003 0.9997 .5    8     13.2   1.875 9.75  10.75  1     1     1     0.2  5000  .5    1     .0015 .2     .6     .8
+i "Moogesque" . .   6.11 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   5000  .4  . .014  .012 .  .
+i "Moogesque" . .   8.00 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   6000  .3  . .012  .009 .  .
+i "Moogesque" . .   8.02 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   7000  .2  . .01   .007 .  .
 
 ; perc
 
-; i           s d a  hz  parm1 fn
-;i "Snare_Sig" 0 1 .4 180 .6    1
-i "Snare_Sig" 2 2 .4 180 .6    1
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
-i "Snare_Sig" + . .  .   .     .
+; i           s    d a    pan dec
 
-; i           s d a  hz  parm1 parm2 fn
-;i "Thump_Sig" 0 1 .4 30  .8    8     3
-;i "Thump_Sig" 1  .4 .2 .3 30  .8    8     3
-;i "Thump_Sig" 3  . .  .   .     .     .
-;i "Thump_Sig" 5  . .  .   .     .     .
-;i "Thump_Sig" 7  . .  .   .     .     .
-;i "Thump_Sig" 9  . .  .   .     .     .
-;i "Thump_Sig" 11 . .  .   .     .     .
-;i "Thump_Sig" 13 . .  .   .     .     .
-;i "Thump_Sig" 15 . .  .   .     .     .
-;i "Thump_Sig" 17 . .  .   .     .     .
-;i "Thump_Sig" 19 . .  .   .     .     .
-;i "Thump_Sig" 21 . .  .   .     .     .
-
-i "RoBod_Kick" 1 2 .4
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
-i "RoBod_Kick" + . . 
+i "Vibes_Sig" 7    1 .018 .4  .5
+i "Vibes_Sig" 10   . .    .63 .5
+i "Vibes_Sig" 11.5 . .017 .73 .5
+i "Vibes_Sig" 13.5 . .    .37 .5
+i "Vibes_Sig" 14   . .018 .4  .5
+i "Vibes_Sig" 18   . .02  .4  .5
+i "Vibes_Sig" 19.5 . .021 .62 .5
+i "Vibes_Sig" 20   . .022 .68 .5
+i "Vibes_Sig" 25.5 . .020 .68 .5
+i "Vibes_Sig" 30.5 . .026 .78 .5
+i "Vibes_Sig" 32.5 . .026 .62 .5
+i "Vibes_Sig" 35   . .023 .80 .5
+i "Vibes_Sig" 44.5 . .027 .45 .5
+ 
+; i           s      d a  pan  hz  parm1 fn
+;
+i "Snare_Sig" 2      2 .2 .4   180 .6    1
+i "Snare_Sig" 4.5    1 .18 .6   180 .6    1
+i "Snare_Sig" 5      1 .2 .3   180 .6    1
+i "Snare_Sig" 7.5    1 .18 .38  180 .6    1
+i "Snare_Sig" 8      1 .2 .39  180 .6    1
+i "Snare_Sig" 10.5   1 .18 .67  180 .6    1
+i "Snare_Sig" 11     1 .2 .29  180 .6    1
+i "Snare_Sig" 20.5   1 .18 .29  180 .6    1
+i "Snare_Sig" 21     1 .2 .29  180 .6    1
+i "Snare_Sig" 24.5   1 .2 .69  180 .6    1
+i "Snare_Sig" 25.75  1 .2 .83  180 .6    1
+i "Snare_Sig" 27.75  1 .2 .23  180 .6    1
+i "Snare_Sig" 28.375 1 .2 .33  180 .6    1
+i "Snare_Sig" 32.375 1 .2 .43  180 .6    1
+i "Snare_Sig" 33.875 1 .2 .48  180 .6    1
+i "Snare_Sig" 34.25  1 .2 .43  180 .6    1
+i "Snare_Sig" 38.5   1 .2 .7   180 .6    1
+i "Snare_Sig" 39     1 .2 .3   180 .6    1
+i "Snare_Sig" 41.5   1 .2 .3   180 .6    1
+i "Snare_Sig" 42     1 .2 .7   180 .6    1
+ 
+i "RoBod_Kick" 15.5   1 .18 .58
+i "RoBod_Kick" 16     . .2  .59
+i "RoBod_Kick" 17.75  . .17 .41
+i "RoBod_Kick" 17.875 . .16 .40
+i "RoBod_Kick" 18     . .2  .42
+i "RoBod_Kick" 20.75  . .19 .58
+i "RoBod_Kick" 21     . .22 .59
+i "RoBod_Kick" 23.5   . .19 .53
+i "RoBod_Kick" 24     . .22 .52
+i "RoBod_Kick" 26.5   . .19 .53
+i "RoBod_Kick" 27     . .22 .52
+i "RoBod_Kick" 29.5   . .19 .53
+i "RoBod_Kick" 30     . .22 .52
+i "RoBod_Kick" 32.5   . .19 .53
+i "RoBod_Kick" 33     . .22 .52
+i "RoBod_Kick" 35.5   . .19 .53
+i "RoBod_Kick" 36     . .22 .52
+i "RoBod_Kick" 38.5   . .19 .53
+i "RoBod_Kick" 39     . .22 .52
+i "RoBod_Kick" 41.5   . .19 .53
+i "RoBod_Kick" 42     . .22 .52
 </CsScore>
 </CsoundSynthesizer>
