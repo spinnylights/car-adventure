@@ -25,6 +25,9 @@ gicrpartsize = 32768
 galsigl init 0
 galsigr init 0
 
+galdsigl init 0
+galdsigr init 0
+
 gilpan init 0
 
 instr Lead_Sig
@@ -170,21 +173,26 @@ instr Lead_Sig
     gilpan = ((ibfrq - iminpitch) / (imaxpitch - iminpitch)) * (ipanhigh - ipanlow) + ipanlow
   galsigl = galsigl + (amix * gilpan)
   galsigr = galsigr + (amix * (1 - gilpan))
+  galdsigl = galdsigl + (amix * (1 - gilpan))
+  galdsigr = galdsigr + (amix * gilpan)
 
 endin
 
 instr Lead_Delay
 
   iamp    = p4
-  ilength = p5
-  idecay  = p6 ; a number less than one goes to silence; a number greater gets louder
+  ilength = p5 ; in seconds
+  idecay  = p6 ; in seconds
 
-  asigl delay (galsigl * iamp), ilength
+  asigl comb (galdsigl * iamp), idecay, ilength
 
-  asigr delay (galsigr * iamp), ilength
+  asigr comb (galdsigr * iamp), idecay, ilength
 
-  gasigdl = gasigdl + ((asigl * idecay) * (1 - gilpan))
-  gasigdr = gasigdr + ((asigr * idecay) * gilpan)
+  galsigl = galsigl + asigl
+  galsigr = galsigr + asigr
+
+  galdsigl = 0
+  galdsigr = 0
 
 endin
 
@@ -511,11 +519,11 @@ f 10 0 32768 7 1 4096 1 0 -1 28672 -1                            ; narrower puls
 t 0 95
 ; reverb + delay
 
-i "Lead_Reverb" 0 66
-i "Lead_Delay"  0 66 0.9 0.31578947368 1.2
-i "Global_Reverb" 0 66
-i "Moogesque_Reverb" 0 66 .9 2000 .9 .6
-i "Global_Delay" 0 66
+i "Lead_Reverb" 0 300
+i "Lead_Delay"  0 300 0.7 0.15789473684 1.8
+i "Global_Reverb" 0 300
+i "Moogesque_Reverb" 0 300 .9 2000 .9 .6
+i "Global_Delay" 0 300
 
 ;; lead
 ;
@@ -547,6 +555,16 @@ i "Lead_Sig" 50 1.625 .66 1 7.09
 i "Lead_Sig" 52 4     .64 1 7.04
 i "Lead_Sig" 53 3     .65 1 7.07
 i "Lead_Sig" 55 5     .63 1 7.05
+i "Lead_Sig" 62 3     .64 2 8.00 7.11 .125 .125
+
+i "Lead_Sig" 66 3     .65 2 8.04 8.02 .125 .125
+i "Lead_Sig" 66 3     .65 2 7.07 8.00 .125 .125
+
+i "Lead_Sig" 69 2     .63 1 8.07
+i "Lead_Sig" 69 2     .63 1 7.11
+
+i "Lead_Sig" 71 9     .62 2 8.05 8.09 .0625 .375
+i "Lead_Sig" 71 9     .62 2 8.02 8.00 .0625 .375
 
 ;; comp
 ;
@@ -566,6 +584,11 @@ i "Moogesque" 32 3  6.04 4  3  3  1.2 0.8 .8  .12  .5  .53 1    1.0003 0.9997 .5
 i "Moogesque" . .   6.11 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   5000  .4  . .014  .012 .  .
 i "Moogesque" . .   8.00 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   6000  .3  . .012  .009 .  .
 i "Moogesque" . .   8.02 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   7000  .2  . .01   .007 .  .
+
+i "Moogesque" 73 6  6.09 4  3  3  1.2 0.8 .8  .12  .5  .53 1    1.0003 0.9997 .5    8     13.2   1.875 9.75  10.75  1     1     1     0.2  5000  .5    1     .0015 .2     .6     .8
+i "Moogesque" . .   6.05 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   5000  .4  . .014  .012 .  .
+i "Moogesque" . .   7.04 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   6000  .3  . .012  .009 .  .
+i "Moogesque" . .   7.11 . . . . .   .  . .    .  . .      .      . .  .  .   .   .   . . . .   7000  .2  . .01   .007 .  .
 
 ; perc
 
