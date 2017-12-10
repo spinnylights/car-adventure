@@ -18,12 +18,14 @@ gasigr init 0
 gasigdl init 0
 gasigdr init 0
 
-galsigl init 0
-galsigr init 0
-
 gicrpartsize = 32768
 
 ; lead
+
+galsigl init 0
+galsigr init 0
+
+gilpan init 0
 
 instr Lead_Sig
 
@@ -163,9 +165,26 @@ instr Lead_Sig
     alscale   = .35
   amix = (amixprenv * aenv) * alscale
 
-    ipan = 0.5
-  galsigl = galsigl + (amix * ipan)
-  galsigr = galsigr + (amix * (1 - ipan))
+      ipanlow  = 0.75
+      ipanhigh = 0.25
+    gilpan = ((ibfrq - iminpitch) / (imaxpitch - iminpitch)) * (ipanhigh - ipanlow) + ipanlow
+  galsigl = galsigl + (amix * gilpan)
+  galsigr = galsigr + (amix * (1 - gilpan))
+
+endin
+
+instr Lead_Delay
+
+  iamp    = p4
+  ilength = p5
+  idecay  = p6 ; a number less than one goes to silence; a number greater gets louder
+
+  asigl delay (galsigl * iamp), ilength
+
+  asigr delay (galsigr * iamp), ilength
+
+  gasigdl = gasigdl + ((asigl * idecay) * (1 - gilpan))
+  gasigdr = gasigdr + ((asigr * idecay) * gilpan)
 
 endin
 
@@ -492,10 +511,11 @@ f 10 0 32768 7 1 4096 1 0 -1 28672 -1                            ; narrower puls
 t 0 95
 ; reverb + delay
 
-i "Lead_Reverb" 0 56
-i "Global_Reverb" 0 56
-i "Moogesque_Reverb" 0 56 .9 2000 .9 .6
-i "Global_Delay" 0 56
+i "Lead_Reverb" 0 66
+i "Lead_Delay"  0 66 0.9 0.31578947368 1.2
+i "Global_Reverb" 0 66
+i "Moogesque_Reverb" 0 66 .9 2000 .9 .6
+i "Global_Delay" 0 66
 
 ;; lead
 ;
@@ -516,7 +536,18 @@ i "Global_Delay" 0 56
 ;
 ;i1 16 4 .60 2 9.06 9.07 .125 .125
 ;i1 16 4 .60 2 8.07 8.11 .125 .125
-;
+
+i "Lead_Sig" 46 1.625 .66 1 7.09
+i "Lead_Sig" +  .5    .62 1 7.09
+i "Lead_Sig" +  1.5   .62 1 7.09
+i "Lead_Sig" +  0.125 .63 1 7.09
+i "Lead_Sig" +  .     .64 1 7.09
+i "Lead_Sig" +  .     .63 1 7.09
+i "Lead_Sig" 50 1.625 .66 1 7.09
+i "Lead_Sig" 52 4     .64 1 7.04
+i "Lead_Sig" 53 3     .65 1 7.07
+i "Lead_Sig" 55 5     .63 1 7.05
+
 ;; comp
 ;
 ;;
